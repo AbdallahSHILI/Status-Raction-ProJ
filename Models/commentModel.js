@@ -3,7 +3,7 @@ const validator = require("validator");
 
 //Schema of comment
 const commentSchema = new mongoose.Schema({
-  comment: {
+  Comment: {
     type: String,
     required: [true, "please enter your comment !! "],
     minlength: 2,

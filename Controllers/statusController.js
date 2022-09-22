@@ -1,7 +1,7 @@
-const User = require("../models/userModel");
-const Status = require("../models/statusModel");
-const Reaction = require("../models/statusModel");
-const Comment = require("../models/commentModel");
+const User = require("../Models/userModel");
+const Status = require("../Models/statusModel");
+const Reaction = require("../Models/statusModel");
+const Comment = require("../Models/commentModel");
 
 // Create new status by current client
 exports.postStatus = async (req, res, next) => {
@@ -9,10 +9,10 @@ exports.postStatus = async (req, res, next) => {
     const status = await Status.create(req.body);
     if (status) {
       await Status.findByIdAndUpdate(status.id, {
-        $push: { userID: req.user.id },
+        $push: { UserID: req.user.id },
       });
       return res.status(201).json({
-        status: "succès",
+        status: "Success",
         data: {
           status,
         },
@@ -20,7 +20,7 @@ exports.postStatus = async (req, res, next) => {
     }
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -37,9 +37,10 @@ exports.commentOneStatus = async (req, res) => {
       });
     }
     // Test if the status was open
-    if (status.condition == "open") {
+    if (status.Condition == "open") {
       // Create an comment
       const comment = await Comment.create(req.body);
+      console.log(comment);
       await Comment.findByIdAndUpdate(comment.id, {
         $push: {
           UserID: req.user.id,
@@ -47,10 +48,10 @@ exports.commentOneStatus = async (req, res) => {
         },
       });
       await Status.findByIdAndUpdate(req.params.idStatus, {
-        $push: { comments: comment.id },
+        $push: { Comments: comment.id },
       });
       return res.status(200).json({
-        status: "succès",
+        status: "Success",
         data: {
           currentUser,
         },
@@ -62,7 +63,7 @@ exports.commentOneStatus = async (req, res) => {
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       message: err,
     });
   }
@@ -85,18 +86,18 @@ exports.updateOneStatus = async (req, res, next) => {
         runValidators: true,
       });
       return res.status(200).json({
-        status: "succès",
+        status: "Success",
         data: {
           doc,
         },
       });
     }
     return res.status(404).json({
-      status: "You are not the respansble to this status",
+      status: "You are not the responsible to this status",
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -107,56 +108,26 @@ exports.findAllReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-    if (status.UserID == req.user.id || req.user.role == "admin") {
+    if (status.UserID == req.user.id || req.user.Role == "admin") {
       let reactions = status.Reaction;
-      // Test if liste of reaction is an empty liste
+      // Test if List of reaction is an empty List
       if (!reactions.length) {
         return res
           .status(400)
-          .send({ message: "You don't have any reaction in this post !! " });
+          .send({ message: "There is no reaction in this post !! " });
       }
       return res.status(200).json({
-        status: "succès",
+        status: "Success",
         reactions,
       });
     }
     return res
       .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+      .send({ message: "You are not the responsible of this post !! " });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
-    });
-  }
-};
-
-//get one status by cuurent user and admin
-exports.getOneStatusClient = async (req, res) => {
-  try {
-    // Test if there is an status
-    const status = await Status.findById(req.params.idStatus);
-    if (!status) {
-      return res.status(400).send({
-        message: "No status with that id !! ",
-      });
-    }
-    // Test if current client is the responsible of the status
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      return res.status(200).json({
-        status: "succès",
-        data: {
-          status,
-        },
-      });
-    }
-    return res.status(404).json({
-      status: "You are not the respansble to this status",
-    });
-  } catch (err) {
-    return res.status(404).json({
-      status: "échouer",
-      data: err,
     });
   }
 };
@@ -175,13 +146,13 @@ exports.closeOneStatus = async (req, res) => {
     // Test if the current client is the responsible to the status
     if (status.UserID != currentUser.id) {
       return res.status(400).send({
-        message: "You are not the respansble to this status !! ",
+        message: "You are not the responsible to this status !! ",
       });
     }
     // Test if the status is already close
-    if (status.Condition) {
+    if (status.Condition == "open") {
       // change the  status's condition to be an close status
-      status.Condition = false;
+      status.Condition = "close";
       //save the last changes
       status.save();
     }
@@ -190,8 +161,38 @@ exports.closeOneStatus = async (req, res) => {
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       message: err,
+    });
+  }
+};
+
+//get one status by current user and admin
+exports.getOneStatusById = async (req, res) => {
+  try {
+    // Test if there is an status
+    const status = await Status.findById(req.params.idStatus);
+    if (!status) {
+      return res.status(400).send({
+        message: "No status with that id !! ",
+      });
+    }
+    // Test if current client is the responsible of the status
+    if (status.UserID == req.user.id || req.user.Role == "admin") {
+      return res.status(200).json({
+        status: "Success",
+        data: {
+          status,
+        },
+      });
+    }
+    return res.status(404).json({
+      status: "You are not the responsible to this status",
+    });
+  } catch (err) {
+    return res.status(404).json({
+      status: "Failed",
+      data: err,
     });
   }
 };
@@ -217,42 +218,18 @@ exports.updateOneComment = async (req, res, next) => {
         }
       );
       return res.status(200).json({
-        status: "succès",
+        status: "Success",
         data: {
           doc,
         },
       });
     }
     return res.status(404).json({
-      status: "You are not the respansble to this comment !!",
+      status: "You are not the responsible to this comment !!",
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
-      data: err,
-    });
-  }
-};
-
-//get one status by admin
-exports.getOneStatusForAdmn = async (req, res) => {
-  try {
-    // Test if there is an status
-    const status = await Status.findById(req.params.idStatus);
-    if (!status) {
-      return res.status(400).send({
-        message: "No status with that id !! ",
-      });
-    }
-    return res.status(200).json({
-      status: "succès",
-      data: {
-        status,
-      },
-    });
-  } catch (err) {
-    return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -269,12 +246,12 @@ exports.deleteOneStatus = async (req, res, next) => {
     }
     currentUser = req.user;
     if (status.UserID == currentUser.id) {
-      if (status.invisible == false) {
-        status.invisible = true;
+      if (status.Invisible == false) {
+        status.Invisible = true;
         //save the last changes
         status.save();
         return res.status(200).json({
-          status: "succès",
+          status: "Success",
           data: null,
         });
       }
@@ -282,20 +259,20 @@ exports.deleteOneStatus = async (req, res, next) => {
         message: "this Post is already deleted !!  ",
       });
     }
-    const lengList = status.Comments.length;
-    for (i = 0; i < lengList; i++) {
+    const lngList = status.Comments.length;
+    for (i = 0; i < lngList; i++) {
       const CommentSelected = await Comment.findById(status.Comments[i]);
       const doc = await Comment.findByIdAndDelete(CommentSelected.id);
       if (doc) {
         return res.status(200).json({
-          status: "succès",
+          status: "Success",
           data: null,
         });
       }
     }
-    const lengListReaction = status.reactions.length;
-    for (i = 0; i < lengListReaction; i++) {
-      const Reaction = await Reaction.findByIdAndDelete(status.reactions[i]);
+    const lngListReaction = status.Reactions.length;
+    for (i = 0; i < lngListReaction; i++) {
+      const Reaction = await Reaction.findByIdAndDelete(status.Reactions[i]);
     }
     currentUser.MyStatus = currentUser.MyStatus.filter(
       (e) => e._id != req.params.idStatus
@@ -306,11 +283,11 @@ exports.deleteOneStatus = async (req, res, next) => {
     });
 
     return res.status(404).json({
-      status: "You are not the respansble to this comment !!",
+      status: "You are not the responsible to this comment !!",
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -334,32 +311,32 @@ exports.deleteOneComment = async (req, res, next) => {
     }
     currentUser = req.user;
     if (comment.UserID == currentUser.id) {
-      //Filter the id of comment from the liste of comments in status
+      //Filter the id of comment from the List of comments in status
       status.Comments = status.Comments.filter(
         (e) => e._id != req.params.idComment
       );
-      let stat = await Status.findByIdAndUpdate(req.params.idComment, comment, {
+      let stat = await Status.findByIdAndUpdate(req.params.idStatus, status, {
         new: true,
         runValidators: true,
       });
       const doc = await Comment.findByIdAndDelete(req.params.idComment);
       if (doc) {
         return res.status(200).json({
-          status: "succès",
+          status: "Success",
           data: null,
         });
       }
       return res.status(200).json({
-        status: "succès",
+        status: "Success",
         data: null,
       });
     }
     return res.status(400).send({
-      message: "You are not the respansble to this comment !!  ",
+      message: "You are not the responsible to this comment !!  ",
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -381,16 +358,16 @@ exports.updateOneReaction = async (req, res, next) => {
         message: "No Reaction with that id !! ",
       });
     }
-    if (req.user.id == req.params.idReaction) {
+    if (req.user.id == reaction.UserID) {
       // Update new changes
       let doc = await Model.findByIdAndUpdate(req.params.idReaction, req.body, {
         new: true,
         runValidators: true,
       });
-      // Test if document was update successfuly
+      // Test if document was update successfully
       if (doc) {
         return res.status(200).json({
-          status: "succès",
+          status: "Success",
           data: {
             doc,
           },
@@ -405,7 +382,7 @@ exports.updateOneReaction = async (req, res, next) => {
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -433,17 +410,17 @@ exports.deleteOneReaction = async (req, res, next) => {
         (e) => e._id != req.params.idReaction
       );
     }
-    // Find comment and delete it
+    // Find react and delete it
     const doc = await Reaction.findByIdAndDelete(req.params.idReaction);
     if (doc) {
       return res.status(200).json({
-        status: "succès",
+        status: "Success",
         data: null,
       });
     }
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -460,12 +437,12 @@ exports.deleteOneStatusAdmin = async (req, res, next) => {
       });
     }
     return res.status(200).json({
-      status: "Status deleted with succes !! ",
+      status: "Status deleted successfully !! ",
       data: null,
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       data: err,
     });
   }
@@ -475,57 +452,74 @@ exports.getAllComments = async (req, res) => {
   try {
     // Test if there is a status
     const status = await Status.findById(req.params.idStatus);
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      let comments = status.comments;
+    if (status.UserID == req.user.id || req.user.Role == "admin") {
+      let comments = status.Comments;
       if (comments.length == 0) {
         return res.status(400).send({ message: "There is no comments !! " });
       }
       return res.status(200).json({
-        status: "succès",
+        status: "Success",
         comments,
       });
     }
     return res
       .status(400)
-      .send({ message: "You are not the respansble to this comment !!" });
+      .send({ message: "You are not the responsible to this status !!" });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
 };
 
-//get all like reactions of an status by current client and admin
+//get one status by admin
+exports.getOneStatusForAdmin = async (req, res) => {
+  try {
+    // Test if there is an status
+    const status = await Status.findById(req.params.idStatus);
+    if (!status) {
+      return res.status(400).send({
+        message: "No status with that id !! ",
+      });
+    }
+    return res.status(200).json({
+      status: "Success",
+      data: {
+        status,
+      },
+    });
+  } catch (err) {
+    return res.status(404).json({
+      status: "Failed",
+      data: err,
+    });
+  }
+};
+
+//get all like reactions of an status by current client
 exports.findAllLikeReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-
     // find the reactions
     const reactions = await Reaction.find({
       react: "Like",
-      UserID: req.user.id,
+      StatusID: req.params.idStatus,
     });
-
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      // Test if liste of reaction is an empty liste
-      if (!reactions) {
-        return res
-          .status(400)
-          .send({ message: "There is no Like reaction in this post !! " });
-      }
-      return res.status(200).json({
-        status: "succès",
-        reactions,
-      });
+    // Test if List of reaction is an empty List
+    if (!reactions) {
+      return res
+        .status(400)
+        .send({ message: "There is no Like reaction in this post !! " });
     }
-    return res
-      .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+    return res.status(200).json({
+      status: "Success",
+      reactions,
+    });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
@@ -536,31 +530,24 @@ exports.findAllLoveReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-
     // find the reactions
     const reactions = await Reaction.find({
       react: "Love",
-      UserID: req.user.id,
+      StatusID: req.params.idStatus,
     });
-
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      // Test if liste of reaction is an empty liste
-      if (!reactions) {
-        return res
-          .status(400)
-          .send({ message: "There is no Love reaction in this post !! " });
-      }
-      return res.status(200).json({
-        status: "succès",
-        reactions,
-      });
+    // Test if List of reaction is an empty List
+    if (!reactions) {
+      return res
+        .status(400)
+        .send({ message: "There is no Love reaction in this post !! " });
     }
-    return res
-      .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+    return res.status(200).json({
+      status: "Success",
+      reactions,
+    });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
@@ -571,31 +558,24 @@ exports.findAllHahaReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-
     // find the reactions
     const reactions = await Reaction.find({
       react: "Haha",
-      UserID: req.user.id,
+      StatusID: req.params.idStatus,
     });
-
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      // Test if liste of reaction is an empty liste
-      if (!reactions) {
-        return res
-          .status(400)
-          .send({ message: "There is no Haha reaction in this post !! " });
-      }
-      return res.status(200).json({
-        status: "succès",
-        reactions,
-      });
+    // Test if List of reaction is an empty List
+    if (!reactions) {
+      return res
+        .status(400)
+        .send({ message: "There is no Haha reaction in this post !! " });
     }
-    return res
-      .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+    return res.status(200).json({
+      status: "Success",
+      reactions,
+    });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
@@ -606,31 +586,24 @@ exports.findAllSadReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-
     // find the reactions
     const reactions = await Reaction.find({
       react: "Sad",
-      UserID: req.user.id,
+      StatusID: req.params.idStatus,
     });
-
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      // Test if liste of reaction is an empty liste
-      if (!reactions) {
-        return res
-          .status(400)
-          .send({ message: "There is no Sad reaction in this post !! " });
-      }
-      return res.status(200).json({
-        status: "succès",
-        reactions,
-      });
+    // Test if List of reaction is an empty List
+    if (!reactions) {
+      return res
+        .status(400)
+        .send({ message: "There is no Sad reaction in this post !! " });
     }
-    return res
-      .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+    return res.status(200).json({
+      status: "Success",
+      reactions,
+    });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
@@ -641,31 +614,24 @@ exports.findAllCelebrateReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-
     // find the reactions
     const reactions = await Reaction.find({
       react: "Celebrate",
-      UserID: req.user.id,
+      StatusID: req.params.idStatus,
     });
-
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      // Test if liste of reaction is an empty liste
-      if (!reactions) {
-        return res
-          .status(400)
-          .send({ message: "There is no Celebrate reaction in this post !! " });
-      }
-      return res.status(200).json({
-        status: "succès",
-        reactions,
-      });
+    // Test if List of reaction is an empty List
+    if (!reactions) {
+      return res
+        .status(400)
+        .send({ message: "There is no Celebrate reaction in this post !! " });
     }
-    return res
-      .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+    return res.status(200).json({
+      status: "Success",
+      reactions,
+    });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
@@ -676,109 +642,95 @@ exports.findAllSupportReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-
     // find the reactions
     const reactions = await Reaction.find({
       react: "Support",
-      UserID: req.user.id,
+      StatusID: req.params.idStatus,
     });
-
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      // Test if liste of reaction is an empty liste
-      if (!reactions) {
-        return res
-          .status(400)
-          .send({ message: "There is no Support reaction in this post !! " });
-      }
-      return res.status(200).json({
-        status: "succès",
-        reactions,
-      });
+    // Test if List of reaction is an empty List
+    if (!reactions) {
+      return res
+        .status(400)
+        .send({ message: "There is no Support reaction in this post !! " });
     }
-    return res
-      .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+    return res.status(200).json({
+      status: "Success",
+      reactions,
+    });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
 };
 
-//get all curous reactions of an status by current client and admin
+//get all curious reactions of an status by current client and admin
 exports.findAllCuriousReaction = async (req, res) => {
   try {
     // find the status
     const status = await Status.findById(req.user.idStatus);
-
     // find the reactions
     const reactions = await Reaction.find({
       react: "Curious",
-      UserID: req.user.id,
+      StatusID: req.params.idStatus,
     });
-
-    if (status.UserID == req.user.id || req.user.role == "admin") {
-      // Test if liste of reaction is an empty liste
-      if (!reactions) {
-        return res
-          .status(400)
-          .send({ message: "There is no Curious reaction in this post !! " });
-      }
-      return res.status(200).json({
-        status: "succès",
-        reactions,
-      });
+    // Test if List of reaction is an empty List
+    if (!reactions) {
+      return res
+        .status(400)
+        .send({ message: "There is no Curious reaction in this post !! " });
     }
-    return res
-      .status(400)
-      .send({ message: "You are not the respansble of this post !! " });
+    return res.status(200).json({
+      status: "Success",
+      reactions,
+    });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
 };
 
-// Liste of Status maked by current client
+// List of Status made by current client
 exports.findAllStatus = async (req, res) => {
   try {
     let status = req.user.MyStatus;
-    // Test if liste of status is an empty liste
+    // Test if List of status is an empty List
     if (!status.length) {
       return res
         .status(400)
-        .send({ message: "You don't have any status in this post !! " });
+        .send({ message: "You don't have any status now !! " });
     }
     return res.status(200).json({
-      status: "succès",
+      status: "Success",
       status,
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }
 };
 
-// Liste of Status maked by user for admin
+// List of Status made by user for admin
 exports.findAllStatusAdmin = async (req, res) => {
   try {
     // Test if there is a user
     const user = await User.findById(req.params.idUser);
     let Status = user.MyStatus;
-    if (Status.length == 0) {
+    if (!Status.length) {
       return res.status(400).send({ message: "There is no status !! " });
     }
     return res.status(200).json({
-      status: "succès",
-      comments,
+      status: "Success",
+      Status,
     });
   } catch (err) {
     return res.status(404).json({
-      status: "échouer",
+      status: "Failed",
       err,
     });
   }

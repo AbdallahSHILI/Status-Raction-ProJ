@@ -3,7 +3,7 @@ const validator = require("validator");
 
 // reaction Schema
 const reactionSchema = new mongoose.Schema({
-  react: {
+  React: {
     type: String,
     enum: ["Like", "Love", "Haha", "Sad", "Celebrate", "Support", "Curious"],
     default: "Like",
@@ -20,17 +20,9 @@ const reactionSchema = new mongoose.Schema({
 
 // Status Schema
 const statusSchema = new mongoose.Schema({
-  name: {
+  StatusContent: {
     type: String,
-    required: [true, "please enter your name "],
-  },
-  Email: {
-    type: String,
-    trim: true,
-    lowercase: true,
-    unique: true,
-    required: [true, "please enter your email ! "],
-    validate: [validator.isEmail, "Please fill a valid email !! "],
+    required: [true, "please enter your post content here !! "],
   },
   UserID: {
     type: mongoose.Schema.ObjectId,
@@ -49,7 +41,7 @@ const statusSchema = new mongoose.Schema({
     },
   ],
   Reaction: [reactionSchema],
-  invisible: {
+  Invisible: {
     type: Boolean,
     default: false,
     select: true,
@@ -58,6 +50,3 @@ const statusSchema = new mongoose.Schema({
 
 const Status = mongoose.model("Status", statusSchema);
 module.exports = Status;
-
-const Reaction = mongoose.model("Reaction", reactionSchema);
-module.exports = Reaction;

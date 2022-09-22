@@ -1,32 +1,48 @@
 const express = require("express");
 const router = express.Router();
 const statusController = require("../Controllers/statusController");
-
-//Create status by current client
-router.post(
-  "/Status",
-  authController.protect,
-  authController.restrictTo("client"),
-  statusController.postStatus
-);
+const authController = require("../Controllers/authController");
 
 //Comment one status by current client
 router.post(
-  "/Comment",
+  "/Comment/:idStatus", //Done
   authController.protect,
   authController.restrictTo("client"),
   statusController.commentOneStatus
 );
 
+//Create status by current client
+router.post(
+  "/NewStatus", //Done
+  authController.protect,
+  authController.restrictTo("client"),
+  statusController.postStatus
+);
+
+// List of Status make by current client
+router.get(
+  "/MyAllStatus",
+  authController.protect,
+  authController.restrictTo("client"),
+  statusController.findAllStatus
+);
+
+//delete post by current client
+router.delete(
+  "/:idStatus", //Done
+  authController.protect,
+  authController.restrictTo("client"),
+  statusController.deleteOneStatus
+);
 //Update one status by current client
 router.patch(
-  "/UpdateStatus/:idStatus",
+  "/UpdateStatus/:idStatus", //Done
   authController.protect,
   authController.restrictTo("client"),
   statusController.updateOneStatus
 );
 
-// Liste of reaction
+// List of reaction
 router.get(
   "/Reaction/:idStatus",
   authController.protect,
@@ -36,15 +52,15 @@ router.get(
 
 //get status by id for current client and admin
 router.get(
-  "/:idStatus",
+  "/:idStatus", //Done
   authController.protect,
   authController.restrictTo("client", "admin"),
   statusController.getOneStatusById
 );
 
-//Close one status by cuurent client
+//Close one status by current client
 router.patch(
-  "/CloseStatus/:idStatus",
+  "/CloseStatus/:idStatus", //Done
   authController.protect,
   authController.restrictTo("client"),
   statusController.closeOneStatus
@@ -52,23 +68,15 @@ router.patch(
 
 //update one comment by a current client
 router.patch(
-  "/UpdateComment/:idComment",
+  "/UpdateComment/:idComment", //Done
   authController.protect,
   authController.restrictTo("client"),
   statusController.updateOneComment
 );
 
-//delete post by current client
-router.delete(
-  "/:idStatus",
-  authController.protect,
-  authController.restrictTo("client"),
-  statusController.deleteOneStatus
-);
-
 //delete comment by current client
 router.delete(
-  "/Comment/:idStatus/:idComment",
+  "/Comment/:idStatus/:idComment", //Done
   authController.protect,
   authController.restrictTo("client"),
   statusController.deleteOneComment
@@ -98,15 +106,15 @@ router.delete(
   statusController.deleteOneStatusAdmin
 );
 
-// Get all comments of specific status for  current user
+// Get all comments of specific status for  current client and admin
 router.get(
-  "/Administrator/AllComments/:idStatus",
+  "/Administrator/AllComments/:idStatus", //Done
   authController.protect,
   authController.restrictTo("client", "admin"),
   statusController.getAllComments
 );
 
-// Liste of Like reaction
+// List of Like reaction
 router.get(
   "/LikeReaction/:idStatus",
   authController.protect,
@@ -114,7 +122,7 @@ router.get(
   statusController.findAllLikeReaction
 );
 
-// Liste of Love reaction
+// List of Love reaction
 router.get(
   "/LoveReaction/:idStatus",
   authController.protect,
@@ -122,7 +130,7 @@ router.get(
   statusController.findAllLoveReaction
 );
 
-// Liste of Haha reaction
+// List of Haha reaction
 router.get(
   "/HahaReaction/:idStatus",
   authController.protect,
@@ -130,7 +138,7 @@ router.get(
   statusController.findAllHahaReaction
 );
 
-// Liste of Sad reaction
+// List of Sad reaction
 router.get(
   "/SadReaction/:idStatus",
   authController.protect,
@@ -138,7 +146,7 @@ router.get(
   statusController.findAllSadReaction
 );
 
-// Liste of Celebrate reaction
+// List of Celebrate reaction
 router.get(
   "/CelebrateReaction/:idStatus",
   authController.protect,
@@ -146,7 +154,7 @@ router.get(
   statusController.findAllCelebrateReaction
 );
 
-// Liste of Support reaction
+// List of Support reaction
 router.get(
   "/SupportReaction/:idStatus",
   authController.protect,
@@ -154,7 +162,7 @@ router.get(
   statusController.findAllSupportReaction
 );
 
-// Liste of Celebrate reaction
+// List of Celebrate reaction
 router.get(
   "/CelebrateReaction/:idStatus",
   authController.protect,
@@ -162,7 +170,7 @@ router.get(
   statusController.findAllCelebrateReaction
 );
 
-// Liste of Curious reaction
+// List of Curious reaction
 router.get(
   "/CuriousReaction/:idStatus",
   authController.protect,
@@ -170,15 +178,7 @@ router.get(
   statusController.findAllCuriousReaction
 );
 
-// Liste of Status maked by current client
-router.get(
-  "/MyAllStatus",
-  authController.protect,
-  authController.restrictTo("client"),
-  statusController.findAllStatus
-);
-
-// Liste of Status of specific user for admin
+// List of Status of specific user for admin
 router.get(
   "/AllStatus/:idUser",
   authController.protect,

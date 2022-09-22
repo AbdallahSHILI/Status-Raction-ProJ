@@ -3,7 +3,7 @@ const validator = require("validator");
 
 // reaction Schema
 const reactionSchema = new mongoose.Schema({
-  react: {
+  React: {
     type: String,
     enum: ["Like", "Love", "Haha", "Sad", "Celebrate", "Support", "Curious"],
     default: "Like",
