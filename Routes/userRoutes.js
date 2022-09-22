@@ -12,14 +12,14 @@ router.get(
 );
 
 //create new compte
-router.post("/signup", authController.signup); //Done
+router.post("/signup", authController.signup);
 
 //login by address and psw
-router.post("/login", authController.login); //Done
+router.post("/login", authController.login);
 
 //get request of friend by current client
 router.get(
-  "/FriendReq", //Done
+  "/FriendReq",
   authController.protect,
   authController.restrictTo("client"),
   userController.FriendRequest
@@ -27,7 +27,7 @@ router.get(
 
 //get send request by current client
 router.get(
-  "/AllSendReq", //Done
+  "/AllSendReq",
   authController.protect,
   authController.restrictTo("client"),
   userController.getAllSendRequest
@@ -35,7 +35,7 @@ router.get(
 
 //get all friends by current client
 router.get(
-  "/Friends", //Done
+  "/Friends",
   authController.protect,
   authController.restrictTo("client"),
   userController.getAllFriends
@@ -43,7 +43,7 @@ router.get(
 
 //Accept request of friends by current client
 router.post(
-  "/AcceptRequest/:idUser", //Done
+  "/AcceptRequest/:idUser",
   authController.protect,
   authController.restrictTo("client"),
   userController.AcceptRequestFriend
@@ -51,7 +51,7 @@ router.post(
 
 //Send a request to another user by current client
 router.post(
-  "/invitation/:idUser", //Done
+  "/invitation/:idUser",
   authController.protect,
   authController.restrictTo("client"),
   userController.sendInvitation
@@ -59,7 +59,7 @@ router.post(
 
 // List of all clients for admin
 router.get(
-  "/AllClients", //Done
+  "/AllClients",
   authController.protect,
   authController.restrictTo("admin"),
   userController.findAllClients
@@ -67,7 +67,7 @@ router.get(
 
 // List of all admins for admin
 router.get(
-  "/AllAdmins", //Done
+  "/AllAdmins",
   authController.protect,
   authController.restrictTo("admin"),
   userController.findAllAdmins
@@ -75,7 +75,7 @@ router.get(
 
 //get user by id for admin
 router.get(
-  "/:idUser", //Done
+  "/:idUser",
   authController.protect,
   authController.restrictTo("admin"),
   userController.findOne
@@ -83,18 +83,18 @@ router.get(
 
 //get client by id for current client
 router.get(
-  "/getClient/:idUser", //Done
+  "/getClient/:idUser",
   authController.protect,
   authController.restrictTo("client"),
   userController.getUserByIdForClient
 );
 
 //update user
-router.patch("/:id", authController.protect, userController.updateProfile); //Done
+router.patch("/:id", authController.protect, userController.updateProfile);
 
 //delete a request of friend by current client
 router.delete(
-  "/CancelRequest/:idUser", //Done
+  "/CancelRequest/:idUser",
   authController.protect,
   authController.restrictTo("client"),
   userController.cancelRequest
@@ -102,7 +102,7 @@ router.delete(
 
 //get all friends of specific user for admin
 router.get(
-  "/Friends/:idUser", //Done
+  "/Friends/:idUser",
   authController.protect,
   authController.restrictTo("admin"),
   userController.getAllFriendsAdmin
@@ -110,7 +110,7 @@ router.get(
 
 //delete user for admin
 router.delete(
-  "/:idUser", //Done
+  "/:idUser",
   authController.protect,
   authController.restrictTo("admin"),
   userController.deleteOneUser

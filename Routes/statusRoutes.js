@@ -5,7 +5,7 @@ const authController = require("../Controllers/authController");
 
 //Comment one status by current client
 router.post(
-  "/Comment/:idStatus", //Done
+  "/Comment/:idStatus",
   authController.protect,
   authController.restrictTo("client"),
   statusController.commentOneStatus
@@ -13,7 +13,7 @@ router.post(
 
 //Create status by current client
 router.post(
-  "/NewStatus", //Done
+  "/NewStatus",
   authController.protect,
   authController.restrictTo("client"),
   statusController.postStatus
@@ -29,14 +29,14 @@ router.get(
 
 //delete post by current client
 router.delete(
-  "/:idStatus", //Done
+  "/:idStatus",
   authController.protect,
   authController.restrictTo("client"),
   statusController.deleteOneStatus
 );
 //Update one status by current client
 router.patch(
-  "/UpdateStatus/:idStatus", //Done
+  "/UpdateStatus/:idStatus",
   authController.protect,
   authController.restrictTo("client"),
   statusController.updateOneStatus
@@ -52,7 +52,7 @@ router.get(
 
 //get status by id for current client and admin
 router.get(
-  "/:idStatus", //Done
+  "/:idStatus",
   authController.protect,
   authController.restrictTo("client", "admin"),
   statusController.getOneStatusById
@@ -60,7 +60,7 @@ router.get(
 
 //Close one status by current client
 router.patch(
-  "/CloseStatus/:idStatus", //Done
+  "/CloseStatus/:idStatus",
   authController.protect,
   authController.restrictTo("client"),
   statusController.closeOneStatus
@@ -68,7 +68,7 @@ router.patch(
 
 //update one comment by a current client
 router.patch(
-  "/UpdateComment/:idComment", //Done
+  "/UpdateComment/:idComment",
   authController.protect,
   authController.restrictTo("client"),
   statusController.updateOneComment
@@ -76,7 +76,7 @@ router.patch(
 
 //delete comment by current client
 router.delete(
-  "/Comment/:idStatus/:idComment", //Done
+  "/Comment/:idStatus/:idComment",
   authController.protect,
   authController.restrictTo("client"),
   statusController.deleteOneComment
@@ -108,7 +108,7 @@ router.delete(
 
 // Get all comments of specific status for  current client and admin
 router.get(
-  "/Administrator/AllComments/:idStatus", //Done
+  "/Administrator/AllComments/:idStatus",
   authController.protect,
   authController.restrictTo("client", "admin"),
   statusController.getAllComments
