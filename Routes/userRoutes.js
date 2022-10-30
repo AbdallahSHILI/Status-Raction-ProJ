@@ -12,10 +12,10 @@ router.get(
 );
 
 //create new compte
-router.post("/signup", authController.signup);
+router.post("/Signup", authController.signup);
 
 //login by address and psw
-router.post("/login", authController.login);
+router.post("/Login", authController.login);
 
 //get request of friend by current client
 router.get(
@@ -51,7 +51,7 @@ router.post(
 
 //Send a request to another user by current client
 router.post(
-  "/invitation/:idUser",
+  "/Invitation/:idUser",
   authController.protect,
   authController.restrictTo("client"),
   userController.sendInvitation
@@ -98,6 +98,14 @@ router.delete(
   authController.protect,
   authController.restrictTo("client"),
   userController.cancelRequest
+);
+
+//delete friend from list of friends by current client
+router.delete(
+  "/DeleteFriends/:idUser",
+  authController.protect,
+  authController.restrictTo("client"),
+  userController.deleteFriend
 );
 
 //get all friends of specific user for admin

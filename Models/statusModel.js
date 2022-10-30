@@ -1,23 +1,6 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
-// reaction Schema
-const reactionSchema = new mongoose.Schema({
-  React: {
-    type: String,
-    enum: ["Like", "Love", "Haha", "Sad", "Celebrate", "Support", "Curious"],
-    default: "Like",
-  },
-  UserID: {
-    type: mongoose.Schema.ObjectId,
-    ref: "User",
-  },
-  StatusID: {
-    type: mongoose.Schema.ObjectId,
-    ref: "Status",
-  },
-});
-
 // Status Schema
 const statusSchema = new mongoose.Schema({
   StatusContent: {
@@ -40,7 +23,18 @@ const statusSchema = new mongoose.Schema({
       ref: "Comment",
     },
   ],
-  Reaction: [reactionSchema],
+  Reaction: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "Reaction",
+    },
+  ],
+  WhoReact: [
+    {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+    },
+  ],
   Invisible: {
     type: Boolean,
     default: false,

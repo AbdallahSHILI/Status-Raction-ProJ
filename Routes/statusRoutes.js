@@ -3,12 +3,12 @@ const router = express.Router();
 const statusController = require("../Controllers/statusController");
 const authController = require("../Controllers/authController");
 
-//Comment one status by current client
+//Create status by current client
 router.post(
-  "/Comment/:idStatus",
+  "/NewReaction/:idStatus",
   authController.protect,
   authController.restrictTo("client"),
-  statusController.commentOneStatus
+  statusController.Reaction
 );
 
 //Create status by current client
@@ -17,6 +17,14 @@ router.post(
   authController.protect,
   authController.restrictTo("client"),
   statusController.postStatus
+);
+
+//Comment one status by current client
+router.post(
+  "/Comment/:idStatus",
+  authController.protect,
+  authController.restrictTo("client"),
+  statusController.commentOneStatus
 );
 
 // List of Status make by current client
@@ -34,6 +42,7 @@ router.delete(
   authController.restrictTo("client"),
   statusController.deleteOneStatus
 );
+
 //Update one status by current client
 router.patch(
   "/UpdateStatus/:idStatus",
@@ -66,6 +75,14 @@ router.patch(
   statusController.closeOneStatus
 );
 
+//Close one status by current client
+router.patch(
+  "/OpenStatus/:idStatus",
+  authController.protect,
+  authController.restrictTo("client"),
+  statusController.openOneStatus
+);
+
 //update one comment by a current client
 router.patch(
   "/UpdateComment/:idComment",
@@ -74,28 +91,20 @@ router.patch(
   statusController.updateOneComment
 );
 
+//Close one status by a current client
+router.patch(
+  "/CloseStatus/:idStatus",
+  authController.protect,
+  authController.restrictTo("client"),
+  statusController.closeOneStatus
+);
+
 //delete comment by current client
 router.delete(
   "/Comment/:idStatus/:idComment",
   authController.protect,
   authController.restrictTo("client"),
   statusController.deleteOneComment
-);
-
-//update one react by a current client
-router.patch(
-  "/Reaction/:idStatus/:idReaction",
-  authController.protect,
-  authController.restrictTo("client"),
-  statusController.updateOneReaction
-);
-
-//delete reaction on a post by current client
-router.delete(
-  "/DeleteReaction/:idStatus/:idReaction",
-  authController.protect,
-  authController.restrictTo("client"),
-  statusController.deleteOneReaction
 );
 
 //delete post by admin
@@ -108,7 +117,7 @@ router.delete(
 
 // Get all comments of specific status for  current client and admin
 router.get(
-  "/Administrator/AllComments/:idStatus",
+  "/AllComments/:idStatus",
   authController.protect,
   authController.restrictTo("client", "admin"),
   statusController.getAllComments

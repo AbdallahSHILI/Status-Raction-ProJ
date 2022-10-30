@@ -90,18 +90,17 @@ exports.getUserByIdForClient = async (req, res, next) => {
 
 exports.FriendRequest = async (req, res, next) => {
   try {
-    // Test if there is a document
-    request = req.user.Requests;
-    console.log(request);
-    if (request == 0) {
+    let CurrentUser = await User.findById(req.user.id).populate("Requests");
+    Invitation = CurrentUser.Requests;
+    if (!Invitation) {
       return res.status(400).json({
         message: "You don't have any request !! ",
       });
     }
     return res.status(200).json({
       status: "Success",
-      result: doc.length,
-      request,
+      result: Invitation.length,
+      Invitation,
     });
   } catch (err) {
     return res.status(404).json({
@@ -146,7 +145,7 @@ exports.updateProfile = async (req, res, next) => {
 // Send a friend request to a specific client by current client
 exports.sendInvitation = async (req, res) => {
   try {
-    currentUser = req.user;
+    CurrentUser = req.user;
     // Test if there is an user
     let user = await User.findById(req.params.idUser);
     if (!user) {
@@ -157,7 +156,7 @@ exports.sendInvitation = async (req, res) => {
     // Test if the profile of user was open
     if (user.Profile == "Open") {
       // Test if the current user send a request
-      if (user.RequestsSend.includes(req.params.idUser)) {
+      if (CurrentUser.RequestsSend.includes(req.params.idUser)) {
         return res.status(400).send({
           message: "You already send a request to this person !! ",
         });
@@ -165,11 +164,11 @@ exports.sendInvitation = async (req, res) => {
       // Add the id of current user to profile of specific user
       await User.findByIdAndUpdate(req.params.idUser, {
         $push: {
-          Requests: currentUser.id,
+          Requests: CurrentUser.id,
         },
       });
       //Add the id of specific user to the request send of  current client
-      await User.findByIdAndUpdate(currentUser.id, {
+      await User.findByIdAndUpdate(CurrentUser.id, {
         $push: {
           RequestsSend: req.params.idUser,
         },
@@ -177,7 +176,7 @@ exports.sendInvitation = async (req, res) => {
       return res.status(200).json({
         status: "Success",
         data: {
-          currentUser,
+          CurrentUser,
         },
       });
     }
@@ -189,6 +188,135 @@ exports.sendInvitation = async (req, res) => {
     return res.status(404).json({
       status: "Failed",
       message: err,
+    });
+  }
+};
+
+// Accept an invitation by current client
+exports.AcceptRequestFriend = async (req, res) => {
+  try {
+    CurrentUser = req.user;
+    // Test if there is a user
+    let user = await User.findById(req.params.idUser);
+    if (!user) {
+      return res.status(400).send({
+        message: "No user with that id !!",
+      });
+    }
+    if (CurrentUser.Friends.includes(user.id)) {
+      return res.status(400).send({
+        message: "You already friend with that user !! ",
+      });
+    }
+    if (!CurrentUser.Requests.includes(user.id)) {
+      return res.status(400).send({
+        message:
+          "This user doesn't send any request to be a friend with you !! ",
+      });
+    }
+    console.log(CurrentUser);
+    user.RequestsSend = user.RequestsSend.filter(
+      (e) => e._id != CurrentUser.id
+    );
+    let doc1 = await User.findByIdAndUpdate(req.params.idUser, user, {
+      new: true,
+      runValidators: true,
+    });
+    CurrentUser.Requests = user.Requests.filter(
+      (e) => e._id != req.params.idUser
+    );
+    let doc2 = await User.findByIdAndUpdate(CurrentUser.id, CurrentUser, {
+      new: true,
+      runValidators: true,
+    });
+
+    await User.findByIdAndUpdate(req.params.idUser, {
+      $push: { Friends: CurrentUser.id },
+    });
+    await User.findByIdAndUpdate(CurrentUser.id, {
+      $push: { Friends: req.params.idUser },
+    });
+    return res.status(200).send({
+      status: "Success",
+      data: {
+        doc1,
+      },
+    });
+  } catch (err) {
+    return res.status(404).json({
+      status: "Failed",
+      message: err,
+    });
+  }
+};
+
+exports.getAllSendRequest = async (req, res, next) => {
+  try {
+    let CurrentUser = await User.findById(req.user.id).populate("RequestsSend");
+    requests = CurrentUser.RequestsSend;
+    return res.status(200).json({
+      status: "Success",
+      result: requests.length,
+      requests,
+    });
+  } catch (err) {
+    return res.status(404).json({
+      status: "Failed",
+      data: err,
+    });
+  }
+};
+
+exports.getAllFriends = async (req, res, next) => {
+  try {
+    friends = req.user.Friends;
+    return res.status(200).json({
+      status: "Success",
+      result: friends.length,
+      friends,
+    });
+  } catch (err) {
+    return res.status(404).json({
+      status: "Failed",
+      data: err,
+    });
+  }
+};
+
+exports.getAllFriendsAdmin = async (req, res, next) => {
+  try {
+    // Test if there is a document
+    const doc = await User.findById(req.params.idUser).populate("Friends");
+    friends = doc.Friends;
+    return res.status(200).json({
+      status: "Success",
+      result: friends.length,
+      friends,
+    });
+  } catch (err) {
+    return res.status(404).json({
+      status: "Failed",
+      data: err,
+    });
+  }
+};
+
+exports.deleteOneUser = async (req, res, next) => {
+  try {
+    // Find user and delete it
+    const doc = await User.findByIdAndDelete(req.params.idUser);
+    if (!doc)
+      return res.status(400).json({
+        status: "No user with that id !!",
+      });
+    return res.status(200).json({
+      status: "Success",
+      data: null,
+    });
+  } catch (err) {
+    return res.status(404).json({
+      status: "Failed",
+      data: err,
     });
   }
 };
@@ -240,115 +368,39 @@ exports.cancelRequest = async (req, res) => {
   }
 };
 
-// Accept an invitation by current client
-exports.AcceptRequestFriend = async (req, res) => {
+exports.deleteFriend = async (req, res, next) => {
   try {
-    CurrentUser = req.user;
-    // Test if there is a user
-    let user = await User.findById(req.params.idUser);
-    if (!user) {
-      return res.status(400).send({
-        message: "No user with that id !!",
-      });
-    }
-    if (CurrentUser.Friends.includes(user.id)) {
-      return res.status(400).send({
-        message: "You already friend with that user !! ",
-      });
-    }
-    user.RequestsSend = user.RequestsSend.filter((e) => e._id != req.user.id);
-    let doc1 = await User.findByIdAndUpdate(req.params.idUser, user, {
-      new: true,
-      runValidators: true,
-    });
-    console.log(user);
-    req.user.Requests = user.Requests.filter((e) => e._id != req.params.idUser);
-    let doc2 = await User.findByIdAndUpdate(CurrentUser.id, CurrentUser, {
-      new: true,
-      runValidators: true,
-    });
-
-    await User.findByIdAndUpdate(req.params.idUser, {
-      $push: { Friends: req.user.id },
-    });
-    await User.findByIdAndUpdate(CurrentUser.id, {
-      $push: { Friends: req.params.idUser },
-    });
-    return res.status(200).send({
-      status: "Success",
-      data: {
-        doc1,
-      },
-    });
-  } catch (err) {
-    return res.status(404).json({
-      status: "Failed",
-      message: err,
-    });
-  }
-};
-
-exports.getAllSendRequest = async (req, res, next) => {
-  try {
-    requests = req.user.RequestsSend;
-    return res.status(200).json({
-      status: "Success",
-      result: requests.length,
-      requests,
-    });
-  } catch (err) {
-    return res.status(404).json({
-      status: "Failed",
-      data: err,
-    });
-  }
-};
-
-exports.getAllFriends = async (req, res, next) => {
-  try {
-    friends = req.user.Friends;
-    return res.status(200).json({
-      status: "Success",
-      result: friends.length,
-      friends,
-    });
-  } catch (err) {
-    return res.status(404).json({
-      status: "Failed",
-      data: err,
-    });
-  }
-};
-
-exports.getAllFriendsAdmin = async (req, res, next) => {
-  try {
-    // Test if there is a document
-    const doc = await User.findById(req.params.idUser);
-    friends = doc.Friends;
-    return res.status(200).json({
-      status: "Success",
-      result: friends.length,
-      friends,
-    });
-  } catch (err) {
-    return res.status(404).json({
-      status: "Failed",
-      data: err,
-    });
-  }
-};
-
-exports.deleteOneUser = async (req, res, next) => {
-  try {
+    CurrentClient = req.user;
     // Find user and delete it
-    const doc = await User.findByIdAndDelete(req.params.idUser);
-    if (!doc)
+    const user = await User.findById(req.params.idUser);
+    if (!user) {
       return res.status(400).json({
         status: "No user with that id !!",
       });
-    return res.status(200).json({
-      status: "Success",
-      data: null,
+    }
+    if (CurrentClient.Friends.includes(user.id)) {
+      CurrentClient.Friends = CurrentClient.Friends.filter(
+        (e) => e._id != user.id
+      );
+      let client1 = await User.findByIdAndUpdate(
+        CurrentClient.id,
+        CurrentClient,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+      user.Friends = user.Friends.filter((e) => e._id != CurrentClient.id);
+      let client2 = await User.findByIdAndUpdate(user.id, user, {
+        new: true,
+        runValidators: true,
+      });
+      return res.status(200).json({
+        status: "Success",
+      });
+    }
+    return res.status(400).send({
+      message: "You are not friend with this person !! ",
     });
   } catch (err) {
     return res.status(404).json({
